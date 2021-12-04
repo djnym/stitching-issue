@@ -3,6 +3,7 @@ const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
 const { introspectSchema } = require('@graphql-tools/wrap');
 const { stitchSchemas } = require('@graphql-tools/stitch');
+const { delegateToSchema } = require('@graphql-tools/delegate');
 
 const makeRemoteExecutor = require('./lib/make_remote_executor');
 
@@ -31,8 +32,9 @@ async function makeGatewaySchema() {
             }
           }
         }
+
       }
-    ]
+    ],
   });
 }
 
