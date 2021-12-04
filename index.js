@@ -12,29 +12,26 @@ async function makeGatewaySchema() {
   // for communicating with remote services
   const postsExec = makeRemoteExecutor('http://localhost:14001/graphql');
   const postsSchema = await introspectSchema(postsExec);
+  const postsSubSchema = { schema: postsSchema, executor: postsExec }
   return stitchSchemas({
     subschemas: [
-      {
-        schema: postsSchema,
-        // executor handles query and mutation requests over HTTP
-        executor: postsExec,
-        resolvers: {
-          Mutation: {
-            createPost: (root, args, context, info) => {
-              console.log("local code should run first");
-              return delegateToSchema({ schema: postsSchema,
-                                        operation: "mutation",
-                                        fieldName: "createPost",
-                                        args: args,
-                                        context,
-                                        info,
-                                      });
-            }
-          }
-        }
-
-      }
+      postsSubSchema
     ],
+    resolvers: {
+      Mutation: {
+        createPost: (root, args, context, info) => {
+          console.log("local code should run first");
+          return delegateToSchema({
+                   schema: postsSubSchema,
+                   operation: "mutation",
+                   fieldName: "createPost",
+                   args: args,
+                   context,
+                   info,
+                 });
+        }
+      }
+    }
   });
 }
 
